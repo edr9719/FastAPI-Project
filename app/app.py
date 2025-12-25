@@ -1,20 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from app.schemas import PostCreate, PostResponse
+from app.db import Post, create_db_and_tables, get_async_session
+from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_db_and_tables()
+    yield
 
-text_posts = {
-    1: {"title": "First Post", "content": "Welcome to the blog. This is the first post."},
-    2: {"title": "FastAPI Basics", "content": "An introduction to building APIs with FastAPI."},
-    3: {"title": "Python Tips", "content": "A few useful Python tips for cleaner code."},
-    4: {"title": "REST APIs", "content": "What REST is and why it still matters."},
-    5: {"title": "Error Handling", "content": "How to handle errors properly in web APIs."},
-    6: {"title": "Type Hints", "content": "Using type hints to improve code readability."},
-    7: {"title": "Async in Python", "content": "Understanding async and await in modern Python."},
-    8: {"title": "Testing APIs", "content": "Why automated tests save you from future pain."},
-    9: {"title": "Clean Code", "content": "Small habits that make code easier to maintain."},
-    10: {"title": "Scaling Up", "content": "What changes when your API starts to grow."}
-}
+app = FastAPI(lifespan=lifespan)
+
 
 @app.get("/posts")
 def get_all_posts(limit: int = None):
